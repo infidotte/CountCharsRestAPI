@@ -1,18 +1,19 @@
 package com.example.restapi;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.restapi.Controller.ControllerAPI;
+import com.example.restapi.Entity.Node;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,24 +21,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest
 class RestApiApplicationTests {
 
-    @SpyBean
-    private ControllerAPI controllerAPI;
     @Autowired
     private MockMvc mockMvc;
 
 
     @Test
-    public void shouldReturnErrorMessage() throws Exception{
+    public void shouldReturnErrorMessage() throws Exception {
+        //if body is empty, then we are expecting a defined error message
         mockMvc.perform(post("/count").content(""))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Empty string in request body.")));
     }
 
     @Test
-    public void shouldReturnOKMessage() throws Exception{
-        String result = mockMvc.perform(post("/count").content("allalala"))
+    public void shouldReturnOKMessage() throws Exception {
+        //if body is not empty, then we are expecting an ok result
+        String result = mockMvc.perform(post("/count").content("allalalaa"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        ObjectMapper mapper = new ObjectMapper();
-        List<Map.Entry<Character, Integer>> list = mapper.readValue(result,List.class);
+        JsonMapper mapper = new JsonMapper();
+        List<Node> list = List.of(mapper.readValue(result, Node[].class));
+        List<Node> asserted = new ArrayList<>();
+        asserted.add(new Node('a', 5));
+        asserted.add(new Node('l', 4));
+        //then we are expecting, that request result is sorted correctly
+        assertEquals(list, asserted);
     }
 }
