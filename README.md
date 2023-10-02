@@ -1,4 +1,6 @@
 # CountCharsRestAPI
+    Запуск:
+    > java -jar RestAPI-Release.jar
 ## Апи для метода: 
     POST /count
 ## Входные данные: 
